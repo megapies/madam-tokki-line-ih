@@ -1,0 +1,61 @@
+
+> madam-tokki-line-ih@1.0.0 test
+> jest
+
+  console.log
+    [dotenv@17.3.1] injecting env (4) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+      at _log (node_modules/dotenv/lib/main.js:139:11)
+
+  console.log
+    Received message: สวัสดี
+
+      at log (index.js:44:11)
+          at Array.map (<anonymous>)
+
+  console.log
+    Received message: error test
+
+      at log (index.js:44:11)
+          at Array.map (<anonymous>)
+
+  console.error
+    Error calling Gemini AI: Error: AI Error
+        at Object.<anonymous> (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/index.test.js:96:48)
+        at Promise.finally.completed (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:1557:28)
+        at new Promise (<anonymous>)
+        at callAsyncCircusFn (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:1497:10)
+        at _callCircusTest (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:1007:40)
+        at processTicksAndRejections (node:internal/process/task_queues:105:5)
+        at _runTest (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:947:3)
+        at /Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:849:7
+        at _runTestsForDescribeBlock (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:862:11)
+        at _runTestsForDescribeBlock (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:857:11)
+        at run (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:761:3)
+        at runAndTransformResultsToJestFormat (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/jestAdapterInit.js:1918:21)
+        at jestAdapter (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-circus/build/runner.js:101:19)
+        at runTestInternal (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-runner/build/index.js:275:16)
+        at runTest (/Users/natthapachanuwattananon/Coding/KUDOT/madam-tokki-line-ih/node_modules/jest-runner/build/index.js:343:7)
+
+      55 |     });
+      56 |   } catch (error) {
+    > 57 |     console.error('Error calling Gemini AI:', error);
+         |             ^
+      58 |     return client.replyMessage({
+      59 |       replyToken: event.replyToken,
+      60 |       messages: [{ type: 'text', text: 'ขออภัยครับ เกิดข้อผิดพลาดในการประมวลผล' }],
+
+      at error (index.js:57:13)
+          at async Promise.all (index 0)
+
+PASS ./index.test.js
+  LINE Webhook API
+    ✓ ควรรับข้อความตัวอักษรและตอบกลับด้วย Gemini AI (18 ms)
+    ✓ ควรไม่ตอบกลับถ้าไม่ใช่ข้อความตัวอักษร (เช่น image) (2 ms)
+    ✓ ควรจัดการกรณี Gemini AI เกิดข้อผิดพลาด (6 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        0.259 s
+Ran all test suites.

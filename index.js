@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const line = require('@line/bot-sdk');
+const crypto = require('crypto');
 const { extractShippingLabel } = require('./lib/genai');
+const { generateShippingLabel } = require('./lib/pdf');
+const { generateShippingLabelPNG } = require('./lib/label-png');
 
 // configuration
 const config = {
@@ -15,6 +18,32 @@ const client = new line.messagingApi.MessagingApiClient({
 });
 
 const app = express();
+
+// Temporary storage for media (In real app, use Cloud Storage or Redis)
+const pdfCache = new Map();
+const imageCache = new Map();
+
+// Route to serve PDF
+app.get('/pdf/:id', (req, res) => {
+  const pdfBuffer = pdfCache.get(req.params.id);
+  if (pdfBuffer) {
+    res.contentType('application/pdf');
+    res.send(pdfBuffer);
+  } else {
+    res.status(404).send('Not Found');
+  }
+});
+
+// Route to serve Image
+app.get('/image/:id', (req, res) => {
+  const imageBuffer = imageCache.get(req.params.id);
+  if (imageBuffer) {
+    res.contentType('image/png');
+    res.send(imageBuffer);
+  } else {
+    res.status(404).send('Not Found');
+  }
+});
 
 // webhook route
 app.post('/webhook', line.middleware(config), (req, res) => {
@@ -38,19 +67,45 @@ async function handleEvent(event) {
   console.log(`Received message: ${userText}`);
 
   try {
-    // get response from gemini ai
-    const responseText = await extractShippingLabel(userText);
+    // 1. Extract info from Gemini
+    const shippingLabel = await extractShippingLabel(userText);
+    console.log('Extracted Data:', JSON.stringify(shippingLabel, null, 2));
 
-    // reply to user
+    // 2. Generate PDF and PNG Buffers
+    const [pdfBuffer, pngBuffer] = await Promise.all([
+      generateShippingLabel(shippingLabel),
+      generateShippingLabelPNG(shippingLabel)
+    ]);
+
+    // 3. Store media and get public URLs
+    const mediaId = crypto.randomUUID();
+    pdfCache.set(mediaId, pdfBuffer);
+    imageCache.set(mediaId, pngBuffer);
+
+    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+    const pdfUrl = `${baseUrl}/pdf/${mediaId}`;
+    const imageUrl = `${baseUrl}/image/${mediaId}`;
+
+    // 4. Reply to user with Image and PDF link as alternative
     return client.replyMessage({
       replyToken: event.replyToken,
-      messages: [{ type: 'text', text: responseText }],
+      messages: [
+        {
+          type: 'image',
+          originalContentUrl: imageUrl,
+          previewImageUrl: imageUrl
+        },
+        {
+          type: 'text',
+          text: `ดาวน์โหลดแบบ PDF สำหรับพิมพ์ได้ที่:\n${pdfUrl}`
+        }
+      ],
     });
   } catch (error) {
-    console.error('Error calling Gemini AI:', error);
+    console.error('Error processing shipping label:', error);
     return client.replyMessage({
       replyToken: event.replyToken,
-      messages: [{ type: 'text', text: 'ขออภัยครับ เกิดข้อผิดพลาดในการประมวลผล' }],
+      messages: [{ type: 'text', text: 'ขออภัยครับ เกิดข้อผิดพลาดในการประมวลผลข้อมูล' }],
     });
   }
 }
